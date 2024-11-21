@@ -1,0 +1,3 @@
+Detailed Summary: tata nexon = ,bot:What is the model year of your Tata Nexon? user: 2024 ,bot:What is the engine type of your 2024 Tata Nexon? (e.g., petrol, diesel, electric) user: petrol ,bot:What is the specific problem you are experiencing with your 2024 Tata Nexon petrol engine? user: engine leakage ,bot:Where is the engine leakage occurring on your 2024 Tata Nexon petrol engine? user: under the engine ,bot:What type of fluid appears to be leaking from under the engine of your 2024 Tata Nexon petrol engine? (e.g., oil, coolant, etc.) user: oil  .
+
+AI-Generated Summary: A 2024 Tata Nexon petrol engine is experiencing an oil leak from under the engine.

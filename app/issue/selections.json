@@ -1,0 +1,83 @@
+[
+  {
+    "userId": "1010101010101",
+    "objectId": "20202020220",
+    "vehicleType": "2-wheeler",
+    "brand": "Honda",
+    "fuelType": "EV",
+    "model": "Shine",
+    "year": "2021"
+  },
+  {
+    "userId": "1010101010101",
+    "objectId": "20202020220",
+    "vehicleType": "2-wheeler",
+    "brand": "Honda",
+    "fuelType": "EV",
+    "model": "Shine",
+    "year": "2021"
+  },
+  {
+    "userId": "1010101010101",
+    "objectId": "20202020220",
+    "vehicleType": "2-wheeler",
+    "brand": "Honda",
+    "fuelType": "EV",
+    "model": "Shine",
+    "year": "2021"
+  },
+  {
+    "userId": "1010101010101",
+    "objectId": "20202020220",
+    "vehicleType": "2-wheeler",
+    "brand": "Honda",
+    "fuelType": "Petrol",
+    "model": "Activa",
+    "year": "2023"
+  },
+  {
+    "userId": "1010101010101",
+    "objectId": "20202020220",
+    "vehicleType": "2-wheeler",
+    "brand": "Yamaha",
+    "fuelType": "Petrol",
+    "model": "R15",
+    "year": "2021"
+  },
+  {
+    "userId": "1010101010101",
+    "objectId": "20202020220",
+    "vehicleType": "4-wheeler",
+    "brand": "Ford",
+    "fuelType": "Diesel",
+    "model": "Mustang",
+    "year": "2021"
+  },
+  {
+    "userId": "1010101010101",
+    "objectId": "20202020220",
+    "vehicleType": "2-wheeler",
+    "brand": "Honda",
+    "fuelType": "EV",
+    "model": "Shine",
+    "year": "2022"
+  },
+  {
+    "userId": "1010101010101",
+    "objectId": "20202020220",
+    "vehicleType": "2-wheeler",
+    "brand": "Yamaha",
+    "fuelType": "Petrol",
+    "model": "R15",
+    "year": "2020"
+  },
+  {
+    "userId": "1010101010101",
+    "objectId": "20202020220",
+    "vehicleType": "2-wheeler",
+    "brand": "Honda",
+    "fuelType": "Petrol",
+    "model": "Unicorn",
+    "year": "2020"
+  }
+]
