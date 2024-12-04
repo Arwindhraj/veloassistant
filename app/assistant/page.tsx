@@ -103,7 +103,7 @@ export default function Assistant() {
 
     try {
 <<<<<<< HEAD
-      const imageResponse = await fetch("http://127.0.0.1:5000/upload_image", {
+      const imageResponse = await fetch("http://de17-183-83-148-113.ngrok.free.app/upload_image", {
         method: "POST",
         body: formData,
       });
@@ -160,7 +160,7 @@ export default function Assistant() {
 
     try {
 <<<<<<< HEAD
-      const response = await fetch("http://127.0.0.1:5000/chat", {
+      const response = await fetch("http://de17-183-83-148-113.ngrok.free.app/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
