@@ -80,7 +80,7 @@ export default function Assistant() {
 
     try {
       const imageResponse = await fetch(
-        "https://ad76-49-206-112-130.ngrok-free.app/upload_image",
+        "https://6f35-49-206-112-130.ngrok-free.app/upload_image",
         {
           method: "POST",
           body: formData,
@@ -135,7 +135,7 @@ export default function Assistant() {
 
     try {
       const response = await fetch(
-        "https://ad76-49-206-112-130.ngrok-free.app/chat",
+        "https://6f35-49-206-112-130.ngrok-free.app/chat",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
