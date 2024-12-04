@@ -27,6 +27,7 @@ chat_history = []
 MAX_INTERACTIONS = 5  
 interaction_count = 0
 image_processed = False
+image_caption = ''
 
 def json_details():
     file_path = 'app/issue/selections.json'
@@ -47,31 +48,55 @@ def json_details():
 
     return selected_data
 
-def generate_vehicle_description(details):
+def generate_vehicle_description(details, image_caption):
     vehicle_type = details['vehicleType']
     vehicle_fuel_type = details['fuelType']
     vehicle_comp = details['brand']
     vehicle_name = details['model']
     vehicle_year = details['year']
-    comp_name = f"{vehicle_comp}{vehicle_name}{vehicle_year}_{vehicle_fuel_type}"
-    
+    comp_name = f"{vehicle_comp}_{vehicle_name}_{vehicle_year}_{vehicle_fuel_type}"
+
     instruction = f"""You have been provided with specific details about a vehicle:
                         - Vehicle Type: {vehicle_type}
                         - Company: {vehicle_comp}
                         - Model: {vehicle_name}
                         - Fuel Type: {vehicle_fuel_type}
-                        - Year: {vehicle_year}
+                        - Year: {vehicle_year}, with the following image description is provided:
+                        {image_caption}.  
 
                         IMPORTANT RULES:
-                        - start with something related to "hello, what seems to be the issue?"
+                        For the FIRST message:
+                        - Start with something related to "hello, what seems to be the issue with your {vehicle_name}?"
                         - DO NOT ask questions about details already known from the above information
-                        - Ask only ONE specific question at a time not more
-                        - Ask progressively more complex diagnostic questions
-                        - Link each new question to previous answers
+                        - Ask only ONE specific question at a time
+                        
+                        For ALL SUBSEQUENT messages:
+                        You MUST follow this EXACT format (including the empty lines and numbers):
+                        [Your diagnostic question]
+
+                        1. [First answer option]
+                        2. [Second answer option]
+                        3. [Third answer option]
+                        4. Others: [Describe your specific situation]
+
+                        EXAMPLE - You must follow this exact formatting:
+                        What type of sound do you hear when starting the engine?
+
+                        1. Grinding metal sound
+                        2. Clicking sound
+                        3. Whining sound
+                        4. Others: Please describe the specific sound
+
+                        General Rules:
+                        - ALWAYS include the numbers 1-4 with the exact format shown above
+                        - Options must be answers/statements, not questions
+                        - Each option should be short and clear
+                        - Always use "4. Others: " as the last option
+                        - Progress from basic to more complex diagnostics
                         - Use simple, clear English
-                        - Focus on understanding potential repair or maintenance issues
 
                         Begin by asking a precise, targeted question about the vehicle's current problem or condition."""
+    
     return instruction, comp_name
 
 def generate_chat_summary(chat_history):
@@ -99,7 +124,7 @@ imgDes = ''
 
 @app.route('/upload_image', methods=['POST'])
 def upload_image():
-    global image_processed
+    global image_processed, image_caption
     if image_processed:
         return jsonify({'error': 'Image has already been processed.'}), 400
 
@@ -115,30 +140,31 @@ def upload_image():
         os.makedirs(os.path.dirname(image_path), exist_ok=True)
         file.save(image_path)
         filename = file.filename
-        imgcap(filename)
-        print(f"Image saved to {image_path} and processed.")
+        image_caption = imgcap(filename)  # Generate image caption
+        print(f"Image saved to {image_path} and processed with caption: {image_caption}")
 
-        image_processed = True
+        image_processed = True  # Set the flag to prevent re-processing
         
-        return jsonify({'message': 'Image uploaded and processed successfully.'}), 200
+        return jsonify({'message': 'Image uploaded and processed successfully.', 'image_caption': image_caption}), 200
     except Exception as e:
         print(f"Image Upload Error: {e}")
         return jsonify({'error': 'Failed to process the image.'}), 500
 
+
 @app.route('/chat', methods=['POST'])
 def process_request():
-
-    global interaction_count
+    global interaction_count, image_caption
     details = json_details()
-    
-    instruction, comp_name = generate_vehicle_description(details)
+
+    instruction, comp_name = generate_vehicle_description(details, image_caption)
     data = request.get_json()
     user_answer = data.get('user_answer', '').strip()
-    
+
+    # If it's the first request (no user answer), generate initial bot question
     if not user_answer:
         response = chat.send_message(instruction)
         bot_question = response.text.strip()
-        
+
         # Initialize chat history and counter
         chat_history.clear()
         interaction_count = 0
@@ -146,56 +172,56 @@ def process_request():
             'role': 'bot', 
             'message': bot_question
         })
-        
+
         return jsonify({
             'bot_question': bot_question, 
             'is_first_message': True,
             'interactions_remaining': MAX_INTERACTIONS
         }), 200
-    
+
     # Add user's answer to chat history
     chat_history.append({
         'role': 'user', 
         'message': user_answer
     })
-    
+
     # Increment interaction counter
     interaction_count += 1
-    
+
     # Check if we've reached the maximum number of interactions
     if interaction_count >= MAX_INTERACTIONS:
         # Generate final response
         chat_summary = generate_chat_summary(chat_history)
-        
+
         folder_path = "python_Script/pdfs"
         pdf_file_path = find_pdf_by_comp_name(comp_name, folder_path)
-        
+
         if pdf_file_path is None:
             return jsonify({'response': 'PDF not found for the given vehicle.'}), 404
-        
+
         text = extract_text_from_pdf(pdf_file_path)
         chunks = split_text(text)   
         embeddings = embed_text_chunks(chunks)
         index = create_faiss_index(embeddings)
-        
+
         final_response = generate_response(chat_summary, index, chunks)
         return jsonify({
-            'response': str(final_response.text.strip()),
+            'response': final_response.text.strip(),
             'is_final': True,
             'interactions_remaining': 0
         }), 200
-    
+
     # If we haven't reached max interactions, continue the conversation
     instruction = f"{instruction} Previous user response: {user_answer}"
     response = chat.send_message(instruction)
     bot_question = response.text.strip()
-    
+
     # Add bot's question to chat history
     chat_history.append({
         'role': 'bot', 
         'message': bot_question
     })
-    
+
     return jsonify({
         'bot_question': bot_question,
         'is_first_message': False,
@@ -242,4 +268,4 @@ def generate_response(query, index, chunks):
     return response
 
 if __name__ == '__main__':
-    app.run(debug=True, port=4000)
+    app.run(debug=True, port=8080)

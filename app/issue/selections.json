@@ -79,5 +79,14 @@
     "fuelType": "Petrol",
     "model": "Unicorn",
     "year": "2020"
+  },
+  {
+    "userId": "1010101010101",
+    "objectId": "20202020220",
+    "vehicleType": "2-wheeler",
+    "brand": "Honda",
+    "fuelType": "Petrol",
+    "model": "Activa",
+    "year": "2020"
   }
 ]

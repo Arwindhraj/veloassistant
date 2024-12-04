@@ -3,9 +3,9 @@ import { useEffect, useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import {
   Send,
+  Image,
   Menu as MenuIcon,
   X,
-  Image,
   Plus,
   History,
   Settings,
@@ -44,122 +44,107 @@ export default function Assistant() {
     if (savedChats) {
       setChatHistory(JSON.parse(savedChats));
     }
-    const savedMessages = localStorage.getItem("messages");
-    if (savedMessages) {
-      setMessages(JSON.parse(savedMessages));
-    }
   }, []);
 
   // Save chat history whenever it changes
   useEffect(() => {
     localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
   }, [chatHistory]);
-  // Save messages whenever they change
-  useEffect(() => {
-    localStorage.setItem("messages", JSON.stringify(messages));
-  }, [messages]);
 
-  // Handle Image Selection
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0] && !isImageProcessed) {
       setSelectedImage(e.target.files[0]);
     }
   };
 
-  // Handle Image Upload
-  const handleImageUpload = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedImage) return;
+    if (!query.trim() && !selectedImage) return;
 
-    const formData = new FormData();
-    formData.append("image", selectedImage);
+    const payload: any = {};
 
-    try {
-      const imageResponse = await fetch("http://127.0.0.1:4000/upload_image", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!imageResponse.ok) {
-        throw new Error(`Image upload failed with status: ${imageResponse.status}`);
-      }
-      // TODO: Get the image and prcess later in the frontend if needed.
-      // const imageData = await imageResponse.json();
-
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: "Image uploaded and processed successfully." },
-      ]);
-      setIsImageProcessed(true);
-    } catch (error) {
-      console.error("Image Upload Error:", error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "Sorry, there was an error uploading your image.",
-        },
-      ]);
+    if (query.trim()) {
+      payload.user_answer = query;
+      setMessages((prev) => [...prev, { role: "user", content: query }]);
+      setQuery("");
     }
-  };
 
-  // Handle Chat Submission
-  const handleChatSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+    if (selectedImage && !isImageProcessed) {
+      const formData = new FormData();
+      formData.append("image", selectedImage);
 
-    type Payload = {
-      user_answer: string;
-    };
-    
-    const payload: Payload = {
-      user_answer: query,
-    };
-    
-    setMessages((prev) => [...prev, { role: "user", content: query }]);
-    setQuery("");
+      try {
+        const imageResponse = await fetch("http://127.0.0.1:4000/upload_image", {
+          method: "POST",
+          body: formData,
+        });
 
-    setIsLoading(true);
+        if (!imageResponse.ok) {
+          throw new Error(`Image upload failed with status: ${imageResponse.status}`);
+        }
 
-    try {
-      const response = await fetch("http://127.0.0.1:4000/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+        const imageData = await imageResponse.json();
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      // Handle bot question
-      if (data.bot_question) {
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", content: data.bot_question },
+          { role: "assistant", content: "Image uploaded and processed successfully." },
         ]);
-      }
-
-      // Handle final response
-      if (data.response) {
+        setIsImageProcessed(true);
+      } catch (error) {
+        console.error("Image Upload Error:", error);
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", content: data.response },
+          {
+            role: "assistant",
+            content: "Sorry, there was an error uploading your image.",
+          },
         ]);
       }
-    } catch (error) {
-      console.error("Error:", error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "Sorry, there was an error processing your request.",
-        },
-      ]);
-    } finally {
-      setIsLoading(false);
+    }
+
+    if (!selectedImage && query.trim()) {
+      setIsLoading(true);
+
+      try {
+        const response = await fetch("http://127.0.0.1:4000/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_answer: query }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        // Handle bot question
+        if (data.bot_question) {
+          setMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: data.bot_question },
+          ]);
+        }
+
+        // Handle final response
+        if (data.response) {
+          setMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: data.response },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: "Sorry, there was an error processing your request.",
+          },
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -180,11 +165,7 @@ export default function Assistant() {
   const loadChat = (id: string) => {
     const chat = chatHistory.find((chat) => chat.id === id);
     if (chat) {
-      const validMessages = chat.messages.map((message) => ({
-        role: message.role as "user" | "assistant",
-        content: message.content,
-      }));
-      setMessages(validMessages);
+      setMessages(chat.messages);
     }
   };
 
@@ -205,6 +186,7 @@ export default function Assistant() {
 
   return (
     <div className="flex h-screen bg-black-50">
+      {/* Sidebar */}
       <div
         className={`${
           isSidebarOpen ? "w-64" : "w-0"
@@ -220,6 +202,7 @@ export default function Assistant() {
           </button>
         </div>
 
+        {/* New Chat Button */}
         <button
           onClick={startNewChat}
           className="m-4 p-2 bg-red-500 text-white rounded-lg flex items-center gap-2 hover:bg-red-500"
@@ -228,6 +211,7 @@ export default function Assistant() {
           New Chat
         </button>
 
+        {/* Tabs */}
         <div className="flex border-b">
           <button
             onClick={() => setActiveTab("history")}
@@ -257,6 +241,7 @@ export default function Assistant() {
           </button>
         </div>
 
+        {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-4">
           {activeTab === "history" ? (
             <div className="space-y-2">
@@ -291,6 +276,7 @@ export default function Assistant() {
             </div>
           ) : (
             <div className="space-y-2">
+              {/* Example services */}
               <div className="p-2 hover:bg-black-100 rounded cursor-pointer">
                 <h3 className="font-medium">Vehicle Diagnostics</h3>
                 <p className="text-sm text-black-600">Check vehicle health</p>
@@ -304,7 +290,9 @@ export default function Assistant() {
         </div>
       </div>
 
+      {/* Main Content */}
       <div className="flex-1 flex flex-col">
+        {/* Header */}
         <div className="bg-black border-b p-4 flex items-center gap-4">
           {!isSidebarOpen && (
             <button
@@ -317,6 +305,7 @@ export default function Assistant() {
           <h1 className="font-semibold">Vehicle Assistant</h1>
         </div>
 
+        {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message, index) => (
             <div
@@ -341,62 +330,28 @@ export default function Assistant() {
             </div>
           ))}
           {isLoading && (
-            <div className="flex justify-start items-center space-x-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-red"></div>
-            <div className="bg-black shadow-sm border rounded-lg p-3 text-white">
-              Let&apos;s Go..
+            <div className="flex justify-start">
+              <div className="bg-black shadow-sm border rounded-lg p-3">
+                Thinking...
+              </div>
             </div>
-
-          </div>
           )}
-          <div ref={messagesEndRef} />
         </div>
 
-        <div className="p-4 bg-black border-t flex flex-col gap-4">
-          <form onSubmit={handleImageUpload} className="flex gap-2 items-center">
-          {!isImageProcessed ? (
-              <>
-                <input
-                  type="file"
-                  accept="image/*"
-                  id="imageUpload"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-                <label
-                  htmlFor="imageUpload"
-                  className={`p-2 rounded-lg cursor-pointer transition-colors flex items-center gap-2 
-                    ${!selectedImage 
-                      ? 'bg-blue-400 text-white' 
-                      : 'bg-blue-500 text-white hover:bg-blue-600'
-                    }`}
-                >
-                  <Image className="w-5 h-5" />
-                  Choose File
-                </label>
-                {selectedImage && (
-                  <button
-                    type="submit"
-                    className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2"
-                  >
-                    <Send className="w-5 h-5" />
-                    Upload Image
-                  </button>
-                )}
-              </>
-            ) : (
-              <button
-                type="submit"
-                disabled
-                className="p-2 bg-green-600 text-white rounded-lg opacity-75 cursor-not-allowed flex items-center gap-2"
-              >
-                <Image className="w-5 h-5" />
-                Image Uploaded
-              </button>
+        {/* Input Form */}
+        <form onSubmit={handleSubmit} className="p-4 bg-black border-t">
+          <div className="flex gap-2 items-center">
+            {!isImageProcessed && (
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="p-2 bg-gray-700 text-white rounded-lg"
+              />
             )}
-          </form>
-
-          <form onSubmit={handleChatSubmit} className="flex gap-2 items-center">
+            {isImageProcessed && (
+              <span className="text-green-500">Image Uploaded</span>
+            )}
             <input
               type="text"
               value={query}
@@ -406,13 +361,13 @@ export default function Assistant() {
             />
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || (!query.trim() && !selectedImage)}
               className="p-2 bg-red-500 text-white rounded-lg disabled:opacity-50 hover:bg-red-600 transition-colors"
             >
               <Send className="w-5 h-5" />
             </button>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   );
