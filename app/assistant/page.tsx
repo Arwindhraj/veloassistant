@@ -23,7 +23,11 @@ export default function Assistant() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<"history" | "services">("history");
   const [chatHistory, setChatHistory] = useState<
-    { id: string; name: string; messages: { role: string; content: string }[] }[]
+    {
+      id: string;
+      name: string;
+      messages: { role: string; content: string }[];
+    }[]
   >([]);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [isImageProcessed, setIsImageProcessed] = useState(false);
@@ -75,20 +79,28 @@ export default function Assistant() {
     formData.append("image", selectedImage);
 
     try {
-      const imageResponse = await fetch("http://127.0.0.1:4000/upload_image", {
-        method: "POST",
-        body: formData,
-      });
+      const imageResponse = await fetch(
+        "https://ad76-49-206-112-130.ngrok-free.app/upload_image",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!imageResponse.ok) {
-        throw new Error(`Image upload failed with status: ${imageResponse.status}`);
+        throw new Error(
+          `Image upload failed with status: ${imageResponse.status}`
+        );
       }
       // TODO: Get the image and prcess later in the frontend if needed.
       // const imageData = await imageResponse.json();
 
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Image uploaded and processed successfully." },
+        {
+          role: "assistant",
+          content: "Image uploaded and processed successfully.",
+        },
       ]);
       setIsImageProcessed(true);
     } catch (error) {
@@ -111,29 +123,32 @@ export default function Assistant() {
     type Payload = {
       user_answer: string;
     };
-    
+
     const payload: Payload = {
       user_answer: query,
     };
-    
+
     setMessages((prev) => [...prev, { role: "user", content: query }]);
     setQuery("");
 
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:4000/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        "https://ad76-49-206-112-130.ngrok-free.app/chat",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      
+
       // Handle bot question
       if (data.bot_question) {
         setMessages((prev) => [
@@ -196,9 +211,7 @@ export default function Assistant() {
     const newName = prompt("Enter a new name for this chat:");
     if (newName) {
       setChatHistory((prev) =>
-        prev.map((chat) =>
-          chat.id === id ? { ...chat, name: newName } : chat
-        )
+        prev.map((chat) => (chat.id === id ? { ...chat, name: newName } : chat))
       );
     }
   };
@@ -232,9 +245,7 @@ export default function Assistant() {
           <button
             onClick={() => setActiveTab("history")}
             className={`flex-1 p-3 ${
-              activeTab === "history"
-                ? " text-red-500"
-                : "text-gray-600"
+              activeTab === "history" ? " text-red-500" : "text-gray-600"
             }`}
           >
             <div className="flex items-center justify-center gap-2">
@@ -245,9 +256,7 @@ export default function Assistant() {
           <button
             onClick={() => setActiveTab("services")}
             className={`flex-1 p-3 ${
-              activeTab === "services"
-                ? " text-red-500"
-                : "text-gray-600"
+              activeTab === "services" ? " text-red-500" : "text-gray-600"
             }`}
           >
             <div className="flex items-center justify-center gap-2">
@@ -342,19 +351,21 @@ export default function Assistant() {
           ))}
           {isLoading && (
             <div className="flex justify-start items-center space-x-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-red"></div>
-            <div className="bg-black shadow-sm border rounded-lg p-3 text-white">
-              Let&apos;s Go..
+              <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-red"></div>
+              <div className="bg-black shadow-sm border rounded-lg p-3 text-white">
+                Let&apos;s Go..
+              </div>
             </div>
-
-          </div>
           )}
           <div ref={messagesEndRef} />
         </div>
 
         <div className="p-4 bg-black border-t flex flex-col gap-4">
-          <form onSubmit={handleImageUpload} className="flex gap-2 items-center">
-          {!isImageProcessed ? (
+          <form
+            onSubmit={handleImageUpload}
+            className="flex gap-2 items-center"
+          >
+            {!isImageProcessed ? (
               <>
                 <input
                   type="file"
@@ -366,9 +377,10 @@ export default function Assistant() {
                 <label
                   htmlFor="imageUpload"
                   className={`p-2 rounded-lg cursor-pointer transition-colors flex items-center gap-2 
-                    ${!selectedImage 
-                      ? 'bg-blue-400 text-white' 
-                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                    ${
+                      !selectedImage
+                        ? "bg-blue-400 text-white"
+                        : "bg-blue-500 text-white hover:bg-blue-600"
                     }`}
                 >
                   <Image className="w-5 h-5" />
