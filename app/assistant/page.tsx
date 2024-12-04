@@ -1,4 +1,4 @@
-"use client";
+a"use client";
 import { useEffect, useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import {
@@ -107,7 +107,6 @@ export default function Assistant() {
         throw new Error(`Image upload failed with status: ${imageResponse.status}`);
       }
 
-      const imageData = await imageResponse.json();
 
       setMessages((prev) => [
         ...prev,
