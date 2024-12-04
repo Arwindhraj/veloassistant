@@ -102,10 +102,20 @@ export default function Assistant() {
     formData.append("image", selectedImage);
 
     try {
+<<<<<<< HEAD
       const imageResponse = await fetch("http://127.0.0.1:5000/upload_image", {
         method: "POST",
         body: formData,
       });
+=======
+      const imageResponse = await fetch(
+        "https://6f35-49-206-112-130.ngrok-free.app/upload_image",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+>>>>>>> 5c692ca9bef23eb5f881dd11bba43770541847cb
 
       if (!imageResponse.ok) {
         throw new Error(
@@ -149,11 +159,22 @@ export default function Assistant() {
     setIsLoading(true);
 
     try {
+<<<<<<< HEAD
       const response = await fetch("http://127.0.0.1:5000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+=======
+      const response = await fetch(
+        "https://6f35-49-206-112-130.ngrok-free.app/chat",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+>>>>>>> 5c692ca9bef23eb5f881dd11bba43770541847cb
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
