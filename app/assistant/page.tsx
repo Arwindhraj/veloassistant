@@ -23,11 +23,7 @@ export default function Assistant() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<"history" | "services">("history");
   const [chatHistory, setChatHistory] = useState<
-    {
-      id: string;
-      name: string;
-      messages: { role: "user" | "assistant"; content: string }[];
-    }[]
+    { id: string; name: string; messages: { role: "user" | "assistant"; content: string }[] }[]
   >([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -49,13 +45,11 @@ export default function Assistant() {
     if (savedChats) {
       const parsedChats = JSON.parse(savedChats);
       setChatHistory(parsedChats);
-
+      
       // Restore last active chat if exists
       const lastActiveChatId = localStorage.getItem("currentChatId");
       if (lastActiveChatId) {
-        const chatToLoad = parsedChats.find(
-          (chat: any) => chat.id === lastActiveChatId
-        );
+        const chatToLoad = parsedChats.find((chat: any) => chat.id === lastActiveChatId);
         if (chatToLoad) {
           setMessages(chatToLoad.messages);
           setCurrentChatId(lastActiveChatId);
@@ -79,15 +73,17 @@ export default function Assistant() {
   // Handle current chat updates
   useEffect(() => {
     if (currentChatId) {
-      setChatHistory((prevHistory) =>
-        prevHistory.map((chat) =>
-          chat.id === currentChatId ? { ...chat, messages: messages } : chat
+      setChatHistory(prevHistory => 
+        prevHistory.map(chat => 
+          chat.id === currentChatId 
+            ? { ...chat, messages: messages } 
+            : chat
         )
       );
     }
   }, [messages, currentChatId]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0] && !isImageProcessed) {
       setSelectedImage(e.target.files[0]);
     }
@@ -102,35 +98,20 @@ export default function Assistant() {
     formData.append("image", selectedImage);
 
     try {
-<<<<<<< HEAD
       const imageResponse = await fetch("http://de17-183-83-148-113.ngrok.free.app/upload_image", {
         method: "POST",
         body: formData,
       });
-=======
-      const imageResponse = await fetch(
-        "https://6f35-49-206-112-130.ngrok-free.app/upload_image",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
->>>>>>> 5c692ca9bef23eb5f881dd11bba43770541847cb
 
       if (!imageResponse.ok) {
-        throw new Error(
-          `Image upload failed with status: ${imageResponse.status}`
-        );
+        throw new Error(`Image upload failed with status: ${imageResponse.status}`);
       }
 
       const imageData = await imageResponse.json();
 
       setMessages((prev) => [
         ...prev,
-        {
-          role: "assistant",
-          content: "Image uploaded and processed successfully.",
-        },
+        { role: "assistant", content: "Image uploaded and processed successfully." },
       ]);
       setIsImageProcessed(true);
     } catch (error) {
@@ -159,22 +140,11 @@ export default function Assistant() {
     setIsLoading(true);
 
     try {
-<<<<<<< HEAD
       const response = await fetch("http://de17-183-83-148-113.ngrok.free.app/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-=======
-      const response = await fetch(
-        "https://6f35-49-206-112-130.ngrok-free.app/chat",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
->>>>>>> 5c692ca9bef23eb5f881dd11bba43770541847cb
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -211,6 +181,7 @@ export default function Assistant() {
     }
   };
 
+
   const startNewChat = () => {
     if (messages.length > 0) {
       const chatName = `Chat ${chatHistory.length + 1}`;
@@ -244,13 +215,13 @@ export default function Assistant() {
   const deleteChat = (id: string) => {
     setChatHistory((prev) => {
       const updatedChats = prev.filter((chat) => chat.id !== id);
-
+      
       // If deleting the current chat, reset current chat state
       if (id === currentChatId) {
         setMessages([]);
         setCurrentChatId(null);
       }
-
+      
       return updatedChats;
     });
   };
@@ -259,10 +230,14 @@ export default function Assistant() {
     const newName = prompt("Enter a new name for this chat:");
     if (newName) {
       setChatHistory((prev) =>
-        prev.map((chat) => (chat.id === id ? { ...chat, name: newName } : chat))
+        prev.map((chat) =>
+          chat.id === id ? { ...chat, name: newName } : chat
+        )
       );
     }
   };
+
+
 
   return (
     <div className="flex h-screen bg-black-50">
@@ -296,7 +271,9 @@ export default function Assistant() {
           <button
             onClick={() => setActiveTab("history")}
             className={`flex-1 p-3 ${
-              activeTab === "history" ? " text-red-500" : "text-gray-600"
+              activeTab === "history"
+                ? " text-red-500"
+                : "text-gray-600"
             }`}
           >
             <div className="flex items-center justify-center gap-2">
@@ -307,7 +284,9 @@ export default function Assistant() {
           <button
             onClick={() => setActiveTab("services")}
             className={`flex-1 p-3 ${
-              activeTab === "services" ? " text-red-500" : "text-gray-600"
+              activeTab === "services"
+                ? " text-red-500"
+                : "text-gray-600"
             }`}
           >
             <div className="flex items-center justify-center gap-2">
@@ -418,10 +397,7 @@ export default function Assistant() {
         {/* Input Area */}
         <div className="p-4 bg-black border-t flex flex-col gap-4">
           {/* Image Upload Form */}
-          <form
-            onSubmit={handleImageUpload}
-            className="flex gap-2 items-center"
-          >
+          <form onSubmit={handleImageUpload} className="flex gap-2 items-center">
             {!isImageProcessed ? (
               <>
                 <input
@@ -434,10 +410,9 @@ export default function Assistant() {
                 <label
                   htmlFor="imageUpload"
                   className={`p-2 rounded-lg cursor-pointer transition-colors flex items-center gap-2 
-                    ${
-                      !selectedImage
-                        ? "bg-blue-400 text-white"
-                        : "bg-blue-500 text-white hover:bg-blue-600"
+                    ${!selectedImage 
+                      ? 'bg-blue-400 text-white' 
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
                     }`}
                 >
                   <Image className="w-5 h-5" />
